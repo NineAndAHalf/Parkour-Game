@@ -9,13 +9,17 @@ public class PlayerController : MonoBehaviour
 	float speedActual;
 
     [SerializeField] float sensitivity = 2f; 
+
  	[SerializeField] float jumpForce = 5f;
 
-	[SerializeField] float stanimaMax = 5f;
-	float stanime = 0;
+	[SerializeField] float staminaMax = 5f;
+    [SerializeField] TMP_Text staminaPercent;
+    float stamina = 0;
+	bool isSprinting;
+
 
 	[SerializeField] TMP_Text fps_text;
-    [SerializeField] TMP_Text staminaPercent;
+    
 
     [SerializeField] int wallJumpMax = 2;
 	int wallJumpActual = 0;
@@ -45,25 +49,33 @@ public class PlayerController : MonoBehaviour
 
 	void Update()
 	{
-		print(isGrounded);
-
 		MovePlayer();
 		RotateCamera();
 
-		if (Input.GetKey(KeyCode.LeftShift) && stanime > 0f)
+		if (Input.GetKey(KeyCode.LeftShift) && stamina > 0f && isGrounded)
 		{
-			speedActual = speedSprint;
-			
-		}
-		else
+            if (stamina > 0)
+            {
+                stamina -= Time.deltaTime;
+                speedActual = speedSprint;
+				isSprinting = true;
+            }
+            else
+            {
+                speedActual = speedNormal;
+				isSprinting = false;
+            }
+        }
+        else
 		{
 			speedActual = speedNormal;
-		}
+            isSprinting = false;
+        }
 
-		if (((isGrounded || (isWalled && wallJumpActual > 0)) && Input.GetButtonDown("Jump") && stanime > 1f))
+		if (((isGrounded || (isWalled && wallJumpActual > 0)) && Input.GetButtonDown("Jump") && stamina > 1f))
 		{
 			Jump();
-			stanime = Mathf.Round((stanime - 1f) * 10) / 10;
+			stamina = Mathf.Round((stamina - 1f) * 10) / 10;
 
 
             if (isWalled)
@@ -72,9 +84,9 @@ public class PlayerController : MonoBehaviour
 			}
 			
 		}
-		if (stanime < 0)
+		if (stamina < 0)
 		{
-			stanime = 0;
+			stamina = 0;
 		}
 
 		
@@ -82,7 +94,7 @@ public class PlayerController : MonoBehaviour
 		{
 			fps_text.enabled = !fps_text.enabled;
 		}
-		staminaPercent.SetText((Mathf.Round(stanime/stanimaMax*100f)).ToString()+"%");
+		staminaPercent.SetText((Mathf.Round(stamina/staminaMax*100f)).ToString()+"%");
 
 		number_of_frames++;
 	}
@@ -120,9 +132,9 @@ public class PlayerController : MonoBehaviour
 
     void RegenerateStanine()
     {
-        if (stanime < stanimaMax && isGrounded)
+        if ((stamina < staminaMax) && isGrounded && !isSprinting)
         {
-            stanime = Mathf.Round((stanime  +0.1f)*10)/10;
+            stamina = Mathf.Round((stamina  +0.1f)*10)/10;
         }
         Invoke("RegenerateStanine", 0.1f);
     }
@@ -144,8 +156,6 @@ public class PlayerController : MonoBehaviour
 		}
 
 	}
-
-
 
     void OnCollisionExit(Collision collision)
 	{
