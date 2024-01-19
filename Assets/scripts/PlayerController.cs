@@ -45,6 +45,8 @@ public class PlayerController : MonoBehaviour
 
 	void Update()
 	{
+		print(isGrounded);
+
 		MovePlayer();
 		RotateCamera();
 
@@ -58,7 +60,7 @@ public class PlayerController : MonoBehaviour
 			speedActual = speedNormal;
 		}
 
-		if (((isGrounded || (isWalled && wallJumpActual > 0)) && Input.GetButtonDown("Jump") && stanime > 0))
+		if (((isGrounded || (isWalled && wallJumpActual > 0)) && Input.GetButtonDown("Jump") && stanime > 1f))
 		{
 			Jump();
 			stanime = Mathf.Round((stanime - 1f) * 10) / 10;
@@ -69,6 +71,10 @@ public class PlayerController : MonoBehaviour
 				wallJumpActual--;
 			}
 			
+		}
+		if (stanime < 0)
+		{
+			stanime = 0;
 		}
 
 		
